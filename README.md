@@ -1,4 +1,4 @@
-# 💊 MedReminder – Smart Medication Reminder System
+# MedReminder – Smart Medication Reminder System
 
 ## 📌 About the Project
 
@@ -12,10 +12,10 @@ This project can also help caregivers or family members monitor patients’ medi
 
 ## 🎯 Objectives
 
-- Help patients take their medication on time ⏰  
-- Reduce human forgetfulness 💊  
-- Improve healthcare follow-up 👨‍⚕️  
-- Provide a simple and accessible interface 📱  
+- Help patients take their medication on time 
+- Reduce human forgetfulness 
+- Improve healthcare follow-up   
+- Provide a simple and accessible interface   
 
 ---
 
