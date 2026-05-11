@@ -1,0 +1,145 @@
+{% extends 'medecins/base_dashboard.html' %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+        <i class="fas fa-chart-line text-primary me-2"></i> Suivi des patients
+    </h2>
+    <a href="{% url 'medecins:dashboard' %}" class="btn btn-outline-secondary rounded-pill">
+        <i class="fas fa-arrow-left me-1"></i> Retour
+    </a>
+</div>
+
+{% if suivi_data %}
+<div class="row">
+    {% for data in suivi_data %}
+    <div class="col-md-6 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-primary text-white rounded-top-4">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-user-circle me-2"></i> {{ data.patient.user.get_full_name|default:data.patient.user.username }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Informations patient -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            <i class="fas fa-phone me-1"></i> Téléphone
+                        </small>
+                        <p class="fw-semibold mb-0">{{ data.patient.telephone }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar-alt me-1"></i> Inscrit depuis
+                        </small>
+                        <p class="fw-semibold mb-0">{{ data.patient.date_inscription|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+
+                <!-- Proches associés -->
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <i class="fas fa-hand-holding-heart me-1"></i> Proches
+                    </small>
+                    <div class="mt-1">
+                        {% with data.patient.proches.all as proches %}
+                            {% if proches %}
+                                {% for proche in proches %}
+                                    <span class="badge bg-info text-white me-1 mb-1">
+                                        <i class="fas fa-user-circle me-1"></i> {{ proche.nom }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="badge bg-secondary">Aucun proche associé</span>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+
+                <!-- Statistiques -->
+                <div class="row g-3 mb-3 text-center">
+                    <div class="col-md-4">
+                        <div class="border rounded-3 p-2 bg-light">
+                            <i class="fas fa-pills text-primary fs-4 mb-1"></i>
+                            <h3 class="text-primary mb-0">{{ data.traitements_actifs }}</h3>
+                            <small class="text-muted">Traitements actifs</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded-3 p-2 bg-light">
+                            <i class="fas fa-check-circle text-success fs-4 mb-1"></i>
+                            <h3 class="text-success mb-0">{{ data.total_confirmations }}</h3>
+                            <small class="text-muted">Prises validées</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="border rounded-3 p-2 bg-light">
+                            <i class="fas fa-calendar-week text-info fs-4 mb-1"></i>
+                            <h3 class="text-info mb-0">{{ data.total_attendues }}</h3>
+                            <small class="text-muted">Prises attendues</small>
+                        </div>
+                    </div>
+                </div>
+                <!-- Traitements actifs avec bouton supprimer -->
+                <h6 class="fw-bold mt-3 mb-2">
+                    <i class="fas fa-list-check text-primary me-2"></i> Traitements en cours
+                </h6>
+                {% for prescription in data.prescriptions_actives %}
+                <div class="alert alert-light border rounded-3 mb-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong class="text-primary">
+                                <i class="fas fa-capsules me-1"></i> {{ prescription.medicament.nom }}
+                            </strong>
+                            <br>
+                            <small class="text-muted">
+                                <i class="fas fa-weight-scale me-1"></i> {{ prescription.medicament.dose }} 
+                                - <i class="fas fa-clock me-1"></i> {{ prescription.heure_prise|time:"H:i" }}
+                            </small>
+                        </div>
+                        <div class="text-end">
+                            <small class="text-muted">
+                                {{ prescription.date_debut|date:"d/m/Y" }}<br>
+                                <i class="fas fa-arrow-right me-1"></i> {{ prescription.date_fin|date:"d/m/Y" }}
+                            </small>
+                            <button type="button" class="btn btn-sm btn-danger mt-2" 
+                                    onclick="supprimerTraitement({{ prescription.id }}, '{{ prescription.medicament.nom }}')">
+                                <i class="fas fa-trash-alt me-1"></i> Supprimer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="alert alert-warning text-center mb-0">
+                    <i class="fas fa-info-circle me-2"></i> Aucun traitement actif
+                </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer bg-transparent border-top-0">
+                <a href="{% url 'medecins:prescrire' data.patient.id %}" class="btn btn-primary w-100">
+                    <i class="fas fa-prescription-bottle me-1"></i> Prescrire
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info text-center py-5">
+    <i class="fas fa-users-slash fa-3x mb-3 d-block"></i>
+    <h5>Aucun patient à suivre</h5>
+    <p class="mb-0">Les patients seront affichés ici une fois qu'ils seront associés à votre cabinet</p>
+</div>
+{% endif %}
+
+<!-- JavaScript pour la suppression -->
+<script>
+function supprimerTraitement(prescriptionId, medicamentNom) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le traitement "${medicamentNom}" ?\n\nCette action est irréversible !`)) {
+        // Rediriger vers l'URL de suppression
+        window.location.href = `/medecins/supprimer-traitement/${prescriptionId}/`;
+    }
+}
+</script>
+{% endblock %}

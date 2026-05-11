@@ -1,0 +1,46 @@
+{% extends 'medecins/base_dashboard.html' %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm rounded-4">
+            <div class="card-header bg-info text-white">
+                <h3 class="mb-0">👪 Ajouter un proche</h3>
+                <p class="mb-0 mt-1">Patient : {{ patient.user.get_full_name|default:patient.user.username }}</p>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">👤 Nom complet du proche</label>
+                        <input type="text" name="nom" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">📞 Téléphone</label>
+                        <input type="tel" name="telephone" class="form-control" required>
+                        <small class="text-muted">Servira d'identifiant de connexion</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">📧 Email (optionnel)</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Identifiants générés :</strong><br>
+                        <strong>Nom d'utilisateur :</strong> [le numéro de téléphone]<br>
+                        <strong>Mot de passe :</strong> proche[le numéro de téléphone]
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-info text-white">✅ Ajouter le proche</button>
+                        <a href="{% url 'medecins:liste_patients' %}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

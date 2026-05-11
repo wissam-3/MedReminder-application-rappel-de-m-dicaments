@@ -1,0 +1,55 @@
+{% extends 'medecins/base_dashboard.html' %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+        <i class="fas fa-hand-holding-heart me-2 text-info"></i> Liste des proches
+    </h2>
+    <span class="badge bg-primary fs-6">{{ tous_les_proches|length }} proche(s)</span>
+</div>
+
+<div class="row">
+    {% for proche in tous_les_proches %}
+    <div class="col-md-4 mb-3">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="bg-info bg-opacity-10 rounded-circle p-3 d-inline-block">
+                        <i class="fas fa-user-circle fa-3x text-info"></i>
+                    </div>
+                    <h5 class="mt-2 mb-0 fw-bold">{{ proche.nom }}</h5>
+                    <small class="text-muted">
+                        <i class="fas fa-phone me-1"></i> {{ proche.telephone }}
+                    </small>
+                </div>
+                <hr>
+                <h6 class="mb-2">
+                    <i class="fas fa-users me-1"></i> Patients suivis :
+                </h6>
+                {% for patient in proche.patients.all %}
+                <div class="d-flex align-items-center justify-content-between bg-light rounded p-2 mb-2">
+                    <div>
+                        <i class="fas fa-user-circle text-primary me-1"></i>
+                        <span class="fw-semibold">{{ patient.user.username }}</span>
+                        <br>
+                        <small class="text-muted">{{ patient.telephone }}</small>
+                    </div>
+                    <a href="{% url 'medecins:prescrire' patient.id %}" class="btn btn-sm btn-outline-primary" title="Prescrire">
+                        <i class="fas fa-prescription-bottle"></i>
+                    </a>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center">Aucun patient associé</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i> Aucun proche
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

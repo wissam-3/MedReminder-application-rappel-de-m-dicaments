@@ -1,0 +1,58 @@
+{% extends 'medecins/base_dashboard.html' %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm rounded-4">
+            <div class="card-header bg-success text-white">
+                <h3 class="mb-0">📝 Prescrire un médicament</h3>
+                <p class="mb-0 mt-1">Patient : {{ patient.user.get_full_name|default:patient.user.username }}</p>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">💊 Médicament</label>
+                        <select name="medicament" class="form-select" required>
+                            <option value="">-- Choisir un médicament --</option>
+                            {% for medicament in medicaments %}
+                            <option value="{{ medicament.id }}">{{ medicament.nom }} - {{ medicament.dose }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">⏰ Heure de prise</label>
+                        <input type="time" name="heure_prise" class="form-control" required>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">📅 Date de début</label>
+                                <input type="date" name="date_debut" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">📅 Date de fin</label>
+                                <input type="date" name="date_fin" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <strong>ℹ️ Information :</strong> Le patient recevra un rappel chaque jour à l'heure indiquée. Vous pouvez créer plusieurs prescriptions séparées pour le même médicament à différentes heures.
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success">✅ Prescrire</button>
+                        <a href="{% url 'medecins:liste_patients' %}" class="btn btn-secondary">Annuler</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

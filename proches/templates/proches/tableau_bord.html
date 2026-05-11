@@ -1,0 +1,212 @@
+{% extends 'proches/base_proche.html' %}
+{% load static %}
+
+{% block proche_content %}
+<div class="row">
+    <!-- Statistiques -->
+    <div class="col-md-12 mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                        <h3>{{ proche.patients.count }}</h3>
+                        <p class="text-muted mb-0">Patients suivis</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <i class="fas fa-bell fa-2x text-warning mb-2"></i>
+                        <h3 class="{% if total_alertes > 0 %}text-danger{% endif %}">{{ total_alertes }}</h3>
+                        <p class="text-muted mb-0">Alertes aujourd'hui</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center border-0 shadow-sm">
+                    <div class="card-body">
+                        <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                        <h3>{% now "H:i" %}</h3>
+                        <p class="text-muted mb-0">Dernière mise à jour</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alertes retard -->
+    {% if alertes_retard %}
+    <div class="col-md-12 mb-4">
+        <div class="card border-danger shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Alertes urgentes - Retards de médicaments</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Médicament</th>
+                                <th>Dose</th>
+                                <th>Heure prévue</th>
+                                <th>Retard</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for alerte in alertes_retard %}
+                            <tr class="table-warning">
+                                <td>
+                                    <strong>{{ alerte.patient.user.username }}</strong><br>
+                                    <small class="text-muted">📞 {{ alerte.patient.telephone }}</small>
+                                </td>
+                                <td><strong>{{ alerte.prescription.medicament.nom }}</strong></td>
+                                <td>{{ alerte.prescription.dose }}</td>
+                                <td><span class="heure-badge"><i class="far fa-clock"></i> {{ alerte.heure_prevue|time:"H:i" }}</span></td>
+                                <td>
+                                    <span class="badge bg-danger">
+                                        ⏰ {{ alerte.retard_minutes }} minutes
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-success" onclick="confirmerPrise({{ alerte.prescription.id }})">
+                                        <i class="fas fa-check"></i> Confirmer
+                                    </button>
+                                    <button class="btn btn-sm btn-info" onclick="contacterPatient('{{ alerte.patient.telephone }}')">
+                                        <i class="fas fa-phone"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Liste des patients -->
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-heartbeat me-2 text-success"></i> Mes patients</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for data in patients_data %}
+                    <div class="col-md-6 mb-3">
+                        <div class="patient-card">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h5 class="mb-1">
+                                        <i class="fas fa-user-circle text-primary me-2"></i>
+                                        {{ data.patient.user.username }}
+                                    </h5>
+                                    <small class="text-muted">
+                                        <i class="fas fa-phone me-1"></i> {{ data.patient.telephone }}
+                                    </small>
+                                </div>
+                                <span class="badge bg-secondary">
+                                    Dr. {{ data.patient.medecin.nom }}
+                                </span>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <strong>💊 Prescriptions du jour :</strong>
+                                {% for prescription in data.prescriptions_actives %}
+                                <div class="medicament-item {% if not prescription.a_valide_aujourdhui %}retard{% endif %}">
+                                    <div class="d-flex justify-content-between align-items-center w-100 flex-wrap">
+                                        <div>
+                                            <strong>{{ prescription.medicament.nom }}</strong>
+                                            <span class="text-muted ms-2">{{ prescription.dose }}</span>
+                                        </div>
+                                        <div class="mt-2 mt-sm-0">
+                                            <span class="heure-badge">
+                                                <i class="far fa-clock"></i> {{ prescription.heure_prise|time:"H:i" }}
+                                            </span>
+                                            {% if prescription.a_valide_aujourdhui %}
+                                                <span class="badge-valide ms-2">
+                                                    <i class="fas fa-check-circle"></i> Pris
+                                                </span>
+                                            {% else %}
+                                                <span class="badge-non-valide ms-2">
+                                                    <i class="fas fa-clock"></i> Non pris
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="alert alert-info mt-2 mb-0">
+                                    <i class="fas fa-info-circle"></i> Aucune prescription active pour aujourd'hui
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-warning text-center">
+                            <i class="fas fa-info-circle"></i> Aucun patient associé pour le moment.
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmerPrise(prescriptionId) {
+    Swal.fire({
+        title: 'Confirmer la prise',
+        text: "Le patient a-t-il pris son médicament ?",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Oui, confirmer',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/proches/api/confirmer-prise/${prescriptionId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Confirmé !', data.message, 'success');
+                    location.reload();
+                } else {
+                    Swal.fire('Erreur', data.message, 'error');
+                }
+            });
+        }
+    });
+}
+
+function contacterPatient(telephone) {
+    Swal.fire({
+        title: 'Contacter le patient',
+        text: `Voulez-vous appeler le ${telephone} ?`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: '📞 Appeler',
+        cancelButtonText: 'Annuler'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `tel:${telephone}`;
+        }
+    });
+}
+</script>
+{% endblock %}

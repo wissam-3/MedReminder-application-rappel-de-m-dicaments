@@ -1,0 +1,132 @@
+{% extends 'patients/base_patient.html' %}
+
+{% block patient_content %}
+
+<!-- Bandeau d'alerte sonore (caché par défaut) -->
+<div id="bandeau-alerte" class="alert alert-warning text-center" style="display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; min-width: 300px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+    <i class="fas fa-bell me-2 fa-fw"></i>
+    <span id="message-alerte"></span>
+    <button type="button" class="btn-close float-end" style="font-size: 0.8rem;" onclick="document.getElementById('bandeau-alerte').style.display='none'"></button>
+</div>
+
+{% if prescriptions_actives %}
+    {% for prescription in prescriptions_actives %}
+    <div class="medication-card" data-heure="{{ prescription.heure_prise|time:'H:i' }}" data-medicament="{{ prescription.medicament.nom }}">
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+            <div class="flex-grow-1">
+                <h3 class="fw-bold mb-1">
+                    <i class="fas fa-capsules text-primary me-2"></i>
+                    {{ prescription.medicament.nom }}
+                </h3>
+                <p class="text-muted mb-2">
+                    <i class="fas fa-weight-scale me-1"></i> {{ prescription.medicament.dose }}
+                </p>
+                <div class="d-flex gap-2 flex-wrap">
+                    <span class="heure-badge">
+                        <i class="fas fa-bell me-1"></i> {{ prescription.heure_prise|time:"H:i" }}
+                    </span>
+                    <span class="heure-badge">
+                        <i class="fas fa-calendar-day me-1"></i> Jusqu'au {{ prescription.date_fin|date:"d/m/Y" }}
+                    </span>
+                </div>
+                {% if prescription.medicament.instruction %}
+                <p class="mt-2 mb-0 small text-muted">
+                    <i class="fas fa-circle-info me-1"></i> {{ prescription.medicament.instruction }}
+                </p>
+                {% endif %}
+            </div>
+            <div class="text-center mt-3 mt-sm-0">
+                {% if prescription.deja_confirme %}
+                    <span class="badge-valide">
+                        <i class="fas fa-circle-check me-1"></i> Déjà validé
+                    </span>
+                {% else %}
+                    <a href="{% url 'patients:valider_prise' prescription.id %}" 
+                       class="btn btn-valider text-white btn-valider-prise"
+                       data-medicament="{{ prescription.medicament.nom }}"
+                       onclick="return confirm('Confirmez-vous la prise de {{ prescription.medicament.nom }} ?')">
+                        <i class="fas fa-check-circle me-2"></i> Valider la prise
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="medication-card text-center">
+        <div class="py-4">
+            <i class="fas fa-face-smile display-1 text-success mb-3"></i>
+            <h3>
+                <i class="fas fa-square-check me-2 text-success"></i> Aucun médicament à prendre
+            </h3>
+            <p class="text-muted">Vous avez déjà pris tous vos médicaments pour aujourd'hui !</p>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Historique rapide -->
+{% if historique_recent %}
+<div class="card border-0 mt-4" style="border-radius: 20px;">
+    <div class="card-body">
+        <h5 class="fw-bold mb-3">
+            <i class="fas fa-clock-rotate-left text-primary me-2"></i> Dernières validations
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th><i class="fas fa-calendar me-1"></i> Date</th>
+                        <th><i class="fas fa-capsules me-1"></i> Médicament</th>
+                        <th><i class="fas fa-clock me-1"></i> Heure</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for confirmation in historique_recent %}
+                    <tr>
+                        <td>{{ confirmation.date_confirmation|date:"d/m/Y" }}</td>
+                        <td>{{ confirmation.prescription.medicament.nom }}</td>
+                        <td>{{ confirmation.heure_confirmation|time:"H:i" }}<tr>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{% url 'patients:historique' %}" class="btn btn-link text-primary p-0">
+            <i class="fas fa-chart-simple me-1"></i> Voir tout l'historique <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Script pour afficher le bandeau d'alerte -->
+<script>
+// Fonction pour afficher le bandeau d'alerte
+function afficherBandeauAlerte(message, type = 'warning') {
+    const bandeau = document.getElementById('bandeau-alerte');
+    const messageSpan = document.getElementById('message-alerte');
+    
+    if (bandeau && messageSpan) {
+        messageSpan.innerHTML = message;
+        bandeau.style.display = 'block';
+        bandeau.className = `alert alert-${type} text-center`;
+        
+        // Auto-masquer après 10 secondes
+        setTimeout(() => {
+            bandeau.style.display = 'none';
+        }, 10000);
+    }
+}
+
+// Écouter les messages d'alerte depuis la page
+window.addEventListener('load', function() {
+    // Vérifier s'il y a des messages dans les paramètres de l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const alerte = urlParams.get('alerte');
+    if (alerte) {
+        afficherBandeauAlerte(decodeURIComponent(alerte), 'success');
+        // Nettoyer l'URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+});
+</script>
+{% endblock %}

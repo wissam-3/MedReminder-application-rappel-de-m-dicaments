@@ -1,0 +1,57 @@
+{% extends 'patients/base_patient.html' %}
+
+{% block patient_content %}
+<div class="medication-card">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <h2 class="fw-bold mb-0">
+            <i class="fas fa-chart-line text-primary me-2"></i> Historique des prises
+        </h2>
+        <a href="{% url 'patients:mes_medicaments' %}" class="btn btn-outline-secondary rounded-pill mt-2 mt-sm-0">
+            <i class="fas fa-arrow-left me-1"></i> Retour
+        </a>
+    </div>
+    
+    <div class="alert alert-info text-center">
+        <i class="fas fa-circle-info me-2"></i>
+        <strong>Total des validations :</strong> {{ total_confirmations }} prise(s) confirmée(s)
+    </div>
+    
+    {% for mois, confirmations in confirmations_par_mois.items %}
+    <div class="mt-4">
+        <h5 class="fw-bold text-primary mb-3">
+            <i class="fas fa-calendar-alt me-2"></i> {{ mois|title }}
+        </h5>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th><i class="fas fa-calendar-day me-1"></i> Date</th>
+                        <th><i class="fas fa-capsules me-1"></i> Médicament</th>
+                        <th><i class="fas fa-weight-scale me-1"></i> Dose</th>
+                        <th><i class="fas fa-clock me-1"></i> Heure prévue</th>
+                        <th><i class="fas fa-circle-check me-1"></i> Heure validée</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for confirmation in confirmations %}
+                    <tr>
+                        <td>{{ confirmation.date_confirmation|date:"d/m/Y" }}</td>
+                        <td><strong>{{ confirmation.prescription.medicament.nom }}</strong></td>
+                        <td>{{ confirmation.prescription.medicament.dose }}</td>
+                        <td>{{ confirmation.prescription.heure_prise|time:"H:i" }}</td>
+                        <td><span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> {{ confirmation.heure_confirmation|time:"H:i" }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <i class="fas fa-folder-open display-1 text-muted mb-3"></i>
+        <p class="text-muted">Aucune prise validée pour le moment</p>
+        <p>Validez vos premiers médicaments pour apparaître ici</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

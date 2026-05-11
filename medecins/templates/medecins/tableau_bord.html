@@ -1,0 +1,129 @@
+{% extends 'medecins/base_dashboard.html' %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+        <i class="fas fa-chart-line text-primary me-2"></i> Tableau de bord
+    </h2>
+    <p class="text-muted mb-0">
+        <i class="fas fa-calendar-alt me-1"></i> {{ today|date:"l d F Y" }}
+    </p>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted text-uppercase">Patients</small>
+                    <h2 class="fw-bold mb-0">{{ total_patients }}</h2>
+                </div>
+                <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                    <i class="fas fa-users fa-2x text-primary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted text-uppercase">Médicaments</small>
+                    <h2 class="fw-bold mb-0">{{ total_medicaments }}</h2>
+                </div>
+                <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                    <i class="fas fa-pills fa-2x text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <small class="text-muted text-uppercase">Traitements actifs</small>
+                    <h2 class="fw-bold mb-0">{{ total_traitements_actifs }}</h2>
+                </div>
+                <div class="bg-warning bg-opacity-10 rounded-circle p-3">
+                    <i class="fas fa-chart-line fa-2x text-warning"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Liste des patients -->
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-header bg-transparent border-0 pt-4">
+        <h5 class="fw-bold">
+            <i class="fas fa-users me-2 text-primary"></i> Mes patients
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th><i class="fas fa-user me-1"></i> Patient</th>
+                        <th><i class="fas fa-phone me-1"></i> Téléphone</th>
+                        <th><i class="fas fa-calendar me-1"></i> Date inscription</th>
+                        <th><i class="fas fa-hand-holding-heart me-1"></i> Proches</th>
+                        <th><i class="fas fa-pills me-1"></i> Traitements</th>
+                        <th><i class="fas fa-cogs me-1"></i> Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for data in patients_data|slice:":5" %}
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-primary bg-opacity-10 rounded-circle p-2">
+                                    <i class="fas fa-user-circle text-primary"></i>
+                                </div>
+                                <strong>{{ data.patient.user.get_full_name|default:data.patient.user.username }}</strong>
+                            </div>
+                        </td>
+                        <td>{{ data.patient.telephone }}</td>
+                        <td>{{ data.patient.date_inscription|date:"d/m/Y" }}</td>
+                        <td>
+                            {% with data.patient.proches.all as proches %}
+                                {% if proches %}
+                                    <div class="d-flex flex-column gap-1">
+                                        {% for proche in proches %}
+                                            <span class="badge bg-info text-white">
+                                                <i class="fas fa-user-circle me-1"></i> {{ proche.nom }}
+                                            </span>
+                                        {% endfor %}
+                                    </div>
+                                    <small class="text-muted mt-1">{{ proches|length }} proche(s)</small>
+                                {% else %}
+                                    <span class="badge bg-secondary">Aucun proche</span>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            <span class="badge bg-success">{{ data.traitements_actifs }} actif(s)</span>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'medecins:prescrire' data.patient.id %}" class="btn btn-sm btn-primary" title="Prescrire">
+                                    <i class="fas fa-prescription-bottle"></i> Prescrire
+                                </a>
+                                <!-- Bouton Ajouter proche SUPPRIMÉ car seul l'admin gère les proches -->
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <i class="fas fa-user-slash fa-3x text-muted mb-2"></i>
+                            <p class="mb-0">Aucun patient pour le moment</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
