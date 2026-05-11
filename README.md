@@ -1,9 +1,5 @@
 # 💊 MedReminder – Smart Medication Reminder System
 
-![MedReminder](https://via.placeholder.com/1000x300.png?text=MedReminder+Smart+Medication+System)
-
----
-
 ## 📌 About the Project
 
 **MedReminder** is a smart medication reminder web application designed to help patients manage their treatments easily and safely.  
